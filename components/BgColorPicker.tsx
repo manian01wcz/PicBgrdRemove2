@@ -23,13 +23,12 @@ export default function BgColorPicker({ value, onChange }: { value: string; onCh
             value === p.value ? "border-violet-400 scale-110" : "border-gray-600"
           }`}
           style={{
-            backgroundColor: p.value === "transparent" ? undefined : p.value,
+            backgroundColor: p.value === "transparent" ? "#1f2937" : p.value,
             backgroundImage: p.value === "transparent"
               ? "linear-gradient(45deg, #374151 25%, transparent 25%), linear-gradient(-45deg, #374151 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #374151 75%), linear-gradient(-45deg, transparent 75%, #374151 75%)"
               : undefined,
-            backgroundSize: "8px 8px",
-            backgroundPosition: "0 0, 0 4px, 4px -4px, -4px 0px",
-            backgroundColor: p.value === "transparent" ? "#1f2937" : p.value,
+            backgroundSize: p.value === "transparent" ? "8px 8px" : undefined,
+            backgroundPosition: p.value === "transparent" ? "0 0, 0 4px, 4px -4px, -4px 0px" : undefined,
           } as React.CSSProperties}
         />
       ))}
