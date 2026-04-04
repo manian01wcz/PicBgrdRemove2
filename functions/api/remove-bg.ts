@@ -1,17 +1,20 @@
-import { NextRequest, NextResponse } from "next/server";
+export async function onRequestPost(context: {
+  request: Request;
+  env: { REMOVE_BG_API_KEY: string };
+}) {
+  const { request, env } = context;
 
-export async function POST(req: NextRequest) {
   try {
-    const formData = await req.formData();
+    const formData = await request.formData();
     const file = formData.get("image_file") as File | null;
 
     if (!file) {
-      return NextResponse.json({ error: "未收到图片文件" }, { status: 400 });
+      return Response.json({ error: "未收到图片文件" }, { status: 400 });
     }
 
-    const apiKey = process.env.REMOVE_BG_API_KEY;
+    const apiKey = env.REMOVE_BG_API_KEY;
     if (!apiKey || apiKey === "your_api_key_here") {
-      return NextResponse.json({ error: "未配置 REMOVE_BG_API_KEY" }, { status: 500 });
+      return Response.json({ error: "未配置 REMOVE_BG_API_KEY" }, { status: 500 });
     }
 
     const bgForm = new FormData();
@@ -26,14 +29,14 @@ export async function POST(req: NextRequest) {
 
     if (!response.ok) {
       const errText = await response.text();
-      return NextResponse.json(
+      return Response.json(
         { error: `remove.bg 错误 (${response.status})`, detail: errText },
         { status: response.status }
       );
     }
 
     const buffer = await response.arrayBuffer();
-    return new NextResponse(buffer, {
+    return new Response(buffer, {
       headers: {
         "Content-Type": "image/png",
         "Cache-Control": "no-store",
@@ -41,6 +44,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "未知错误";
-    return NextResponse.json({ error: "服务器内部错误", detail: msg }, { status: 500 });
+    return Response.json({ error: "服务器内部错误", detail: msg }, { status: 500 });
   }
 }
