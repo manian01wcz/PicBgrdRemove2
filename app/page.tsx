@@ -1,8 +1,10 @@
 "use client";
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback } from "react";
 import UploadZone from "@/components/UploadZone";
 import ResultPreview from "@/components/ResultPreview";
 import BgColorPicker from "@/components/BgColorPicker";
+import AuthButton from "@/components/AuthButton";
+import { useAuth } from "@/components/useAuth";
 
 export type ProcessState = "idle" | "processing" | "done" | "error";
 
@@ -13,8 +15,14 @@ export default function Home() {
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [bgColor, setBgColor] = useState<string>("transparent");
   const [fileName, setFileName] = useState<string>("");
+  const { user, signOut } = useAuth();
 
   const handleFile = useCallback(async (file: File) => {
+    if (!user) {
+      setErrorMsg("请先登录后再使用");
+      setState("error");
+      return;
+    }
     if (!file.type.match(/image\/(jpeg|png|webp)/)) {
       setErrorMsg("仅支持 JPG、PNG、WebP 格式");
       setState("error");
@@ -33,9 +41,14 @@ export default function Home() {
     setErrorMsg("");
 
     try {
+      const token = localStorage.getItem("user_token") || "";
       const form = new FormData();
       form.append("image_file", file);
-      const res = await fetch("/api/remove-bg", { method: "POST", body: form });
+      const res = await fetch("/api/remove-bg", {
+        method: "POST",
+        body: form,
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (!res.ok) {
         const json = await res.json();
@@ -49,7 +62,7 @@ export default function Home() {
       setErrorMsg(e instanceof Error ? e.message : "处理失败，请重试");
       setState("error");
     }
-  }, []);
+  }, [user]);
 
   const handleReset = () => {
     setState("idle");
@@ -69,7 +82,22 @@ export default function Home() {
           </div>
           <span className="font-semibold text-white text-lg">背景移除工具 2.0</span>
         </div>
-        <span className="text-xs text-gray-500 hidden sm:block">Powered by remove.bg · Cloudflare</span>
+        <div className="flex items-center gap-3">
+          {user ? (
+            <>
+              <img src={user.picture} alt={user.name} className="w-8 h-8 rounded-full" />
+              <span className="text-gray-300 text-sm hidden sm:block">{user.name}</span>
+              <button
+                onClick={signOut}
+                className="text-xs text-gray-500 hover:text-gray-300 transition px-2 py-1 rounded border border-gray-700 hover:border-gray-500"
+              >
+                退出
+              </button>
+            </>
+          ) : (
+            <AuthButton />
+          )}
+        </div>
       </header>
 
       {/* Hero */}
@@ -81,7 +109,14 @@ export default function Home() {
           <p className="text-gray-400 text-center mb-12 max-w-md">
             上传图片，AI 自动识别并移除背景，支持人像、商品、动物等各类场景
           </p>
-          <UploadZone onFile={handleFile} />
+          {user ? (
+            <UploadZone onFile={handleFile} />
+          ) : (
+            <div className="flex flex-col items-center gap-4">
+              <p className="text-gray-500 text-sm">请先登录后使用</p>
+              <AuthButton />
+            </div>
+          )}
         </section>
       )}
 
@@ -99,12 +134,15 @@ export default function Home() {
         <section className="flex flex-col items-center justify-center flex-1 gap-4">
           <div className="text-5xl">⚠️</div>
           <p className="text-red-400 text-lg font-medium">{errorMsg}</p>
-          <button
-            onClick={handleReset}
-            className="mt-2 px-6 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 transition text-white font-medium"
-          >
-            重新上传
-          </button>
+          <div className="flex gap-3 mt-2">
+            <button
+              onClick={handleReset}
+              className="px-6 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 transition text-white font-medium"
+            >
+              重新上传
+            </button>
+            {!user && <AuthButton />}
+          </div>
         </section>
       )}
 
@@ -144,7 +182,6 @@ function DownloadButton({ resultUrl, bgColor, fileName }: { resultUrl: string; b
       a.download = fileName.replace(/\.[^.]+$/, "") + "_nobg.png";
       a.click();
     } else {
-      // Merge background color via canvas
       const img = new Image();
       img.src = resultUrl;
       await new Promise((r) => (img.onload = r));
