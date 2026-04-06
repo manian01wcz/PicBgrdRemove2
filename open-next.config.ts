@@ -1,16 +1,7 @@
 import type { OpenNextConfig } from "@opennextjs/cloudflare";
 
 const config: OpenNextConfig = {
-  default: {
-    override: {
-      wrapper: "cloudflare-pages",
-      converter: "edge",
-      incrementalCache: "none",
-      tagCache: "none",
-      logging: "none",
-      revalidate: "none",
-    },
-  },
+  // 使用 Cloudflare 默认设置，不手动 override
 };
 
 export default config;
