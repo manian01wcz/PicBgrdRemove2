@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -10,7 +11,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="zh">
       <head>
-        <script src="https://analytics.ahrefs.com/analytics.js" data-key="+rBMZIpyFb3JlYAPzDKBRg" async></script>
+        <Script
+          src="https://analytics.ahrefs.com/analytics.js"
+          data-key="+rBMZIpyFb3JlYAPzDKBRg"
+          strategy="afterInteractive"
+        />
       </head>
       <body className="min-h-screen bg-gray-950 antialiased">{children}</body>
     </html>
