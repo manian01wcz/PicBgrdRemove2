@@ -9,6 +9,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="zh">
+      <head>
+        <script src="https://analytics.ahrefs.com/analytics.js" data-key="+rBMZIpyFb3JlYAPzDKBRg" async></script>
+      </head>
       <body className="min-h-screen bg-gray-950 antialiased">{children}</body>
     </html>
   );
